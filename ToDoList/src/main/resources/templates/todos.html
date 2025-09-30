@@ -128,7 +128,9 @@
 
 <header>
     <h1>Welcome, <span th:text="${#authentication.name}">User</span>!</h1>
-    <a th:href="@{/logout}" class="logout-btn">Logout</a>
+    <form th:action="@{/logout}" method="post">
+    <button type="submit">Logout</button>
+</form>
 </header>
 
 <main>
