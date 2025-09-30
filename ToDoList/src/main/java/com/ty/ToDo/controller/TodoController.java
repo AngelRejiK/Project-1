@@ -28,7 +28,7 @@ public class TodoController {
         return "todos";
     }
 
-    @PostMapping("/todos")
+    @PostMapping("/todos/add")
     public String addTodo(@ModelAttribute TodoItem todo, @AuthenticationPrincipal UserDetails userDetails) {
         String username = userDetails.getUsername();
         User user = userService.findByUsername(username)
@@ -50,3 +50,4 @@ public class TodoController {
         return "redirect:/todos";
     }
 }
+
