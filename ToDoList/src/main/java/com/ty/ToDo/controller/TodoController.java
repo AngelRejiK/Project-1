@@ -12,9 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/todos")
 public class TodoController {
-
     private final TodoService todoService;
     private final UserService userService;
 
@@ -23,7 +21,6 @@ public class TodoController {
         this.userService = userService;
     }
 
-    // View all tasks for the logged-in user
     @GetMapping("/todos")
     public String getTodos(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         String username = userDetails.getUsername();
@@ -31,45 +28,25 @@ public class TodoController {
         return "todos";
     }
 
-    // Add a new task
-    @PostMapping("/add")
-    public String addTodo(@RequestParam("title") String title,
-                          @RequestParam(value = "description", required = false) String description,
-                          @AuthenticationPrincipal UserDetails userDetails) {
-
+    @PostMapping("/todos")
+    public String addTodo(@ModelAttribute TodoItem todo, @AuthenticationPrincipal UserDetails userDetails) {
         String username = userDetails.getUsername();
-        User user=userService.findByUsername(username);
-        
-        TodoItem todo = new TodoItem();
-        todo.setTitle(title);
-        todo.setDescription(description);
-        todo.setCompleted(false);
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         todo.setUser(user);
-
         todoService.save(todo);
         return "redirect:/todos";
     }
 
-    // Mark a task as completed
-    @PostMapping("/{id}/delete")
-    public String deleteTodo(@PathVariable Long id,
-                             @AuthenticationPrincipal UserDetails userDetails) {
-
-        String username = userDetails.getUsername();  // Get username string
-        User user = userService.findByUsername(username);  // Convert to User entity
-        todoService.deleteById(id, user);  // Pass User, not String
+    @PostMapping("/todos/{id}/complete")
+    public String completeTodo(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        todoService.markAsCompleted(id, userDetails.getUsername());
         return "redirect:/todos";
     }
 
-    @PostMapping("/{id}/complete")
-    public String completeTodo(@PathVariable Long id,
-                               @AuthenticationPrincipal UserDetails userDetails) {
-
-        String username = userDetails.getUsername();
-        User user2=userService.findByUsername(username);
-        todoService.markAsCompleted(id, user2);
+    @PostMapping("/todos/{id}/delete")
+    public String deleteTodo(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        todoService.deleteTodo(id, userDetails.getUsername());
         return "redirect:/todos";
     }
-
-
 }
